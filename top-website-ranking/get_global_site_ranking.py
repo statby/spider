@@ -61,7 +61,7 @@ def write_txt(start, stop):
         pass
 
 def write_excel(start, stop):
-    # 通过xlwt库写入excel文件,只支持sls格式,而且写入大批量文件时会错线错误,改用xlsxwriter库
+    # 通过xlwt库写入excel文件,只支持sls格式,而且写入大批量文件时会出错,遂改用xlsxwriter
     wb = xlwt.Workbook()
     sheet1 = wb.add_sheet('global')
     try:
