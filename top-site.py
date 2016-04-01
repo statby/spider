@@ -8,11 +8,12 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+import xlwt
 
 
 data = []
 
-def get_data(page,area='Global'):
+def get_data(page):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',}
     if page == 1:
         site = 'http://alexa.chinaz.com/Global/index.html'
@@ -30,23 +31,42 @@ def get_data(page,area='Global'):
     urls = soup.select(' div > div > ul > li > div > h3 > span ')
     
     for ranking, introduce, url in zip(rankings, introduces, urls):
-        data.append([ranking.text, introduce.text, url.text])
+        data.append([ranking.text, url.text, introduce.text])
     return(data)
 
-#print(get_data(1))
-
-#print (get_data(4))
 def get_more_page(start,stop):
     sum = []
     for pages in range(start,stop+1):
         sum += get_data(pages)
     return sum
 
-#print(get_more_page(1,3))
+#print(get_more_page(1,2))
 
 #print(get_more_page(2,20))
+'''
 def write_down(start,stop):
-    with open('top-site.txt', 'w+') as f:
-        f.write(str(get_more_page(2,20)))
+    with open('top-site.txt', 'w') as f:
+#        f.write(str(get_more_page(start,stop)))
+        for line in get_more_page(start,stop):
+            f.write(str(line), '\n')
+
+#write_down(1,3)
+'''
+#with open('top-site.txt', 'w') as f:
+#    for i in range(len(get_more_page(1,1))):
+#        f.write(get_more_page(1,1)[i]+'\n')
+
+#for i in range(len(get_more_page(1,1))):
+#     print (type(get_more_page(1,1)[i]))
+for i,j in enumerate(get_data(4)):
+     print(j)
+
+#with open('top-site.txt', 'w') as f:
+#    for i,j in enumerate(get_more_page(1,1)):
+#        f.write(str(j)+'\n')
+
+
+
+
 
     
