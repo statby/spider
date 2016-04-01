@@ -11,14 +11,14 @@ import time
 import xlwt
 
 
-data = []
 
-def get_data(page):
+def get_data(page,area='Global'):
+    data = []
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',}
     if page == 1:
-        site = 'http://alexa.chinaz.com/Global/index.html'
+        site = 'http://alexa.chinaz.com/{}/index.html'.format(area)
     else:
-        site = 'http://alexa.chinaz.com/Global/index_{}.html'.format(page)
+        site = 'http://alexa.chinaz.com/{}/index_{}.html'.format(area,page)
     req = requests.get(site,headers=headers)
     req.encoding = 'utf-8'
     status = req.status_code
@@ -38,11 +38,14 @@ def get_more_page(start,stop):
     sum = []
     for pages in range(start,stop+1):
         sum += get_data(pages)
+#        sum.append(get_data(pages))
     return sum
+#print (get_data(2))
 
-#print(get_more_page(1,2))
 
-#print(get_more_page(2,20))
+#print(get_more_page(1,3))
+#for i,j in enumerate(get_data(4)):
+# # ##     print(j)
 '''
 def write_down(start,stop):
     with open('top-site.txt', 'w') as f:
@@ -58,12 +61,15 @@ def write_down(start,stop):
 
 #for i in range(len(get_more_page(1,1))):
 #     print (type(get_more_page(1,1)[i]))
-for i,j in enumerate(get_data(4)):
-     print(j)
 
-#with open('top-site.txt', 'w') as f:
-#    for i,j in enumerate(get_more_page(1,1)):
-#        f.write(str(j)+'\n')
+#for i,j in enumerate(get_more_page(1,4)):
+#      print(j)
+
+with open('top-site.txt', 'w') as f:
+    for i,j in enumerate(get_more_page(1,20)):
+        f.write('\n')
+        for x in j:
+            f.write(x+' ')
 
 
 
