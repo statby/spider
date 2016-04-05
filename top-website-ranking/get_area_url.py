@@ -1,6 +1,6 @@
 #!/bin/env python3
 # coding=utf-8
-# Filename    : get_global_site_ranking.py
+# Filename    : get_area_url.py
 # Date        : 2016-03-30 23:28:28
 # Author      : Statby
 # Description : 
@@ -20,24 +20,18 @@ def get_area_url():
     urls = soup.select(' div > div > a ')
     return urls
     
-print (get_area_url())
+#print (get_area_url())
        
 def get_urls(): 
     #获得所有地区request url
     sum = []
-    for area_name in get_area_url():
-        sum.append(area_name.get('href'))
-    filter = [f for f in sum if 'index' in f] 
-    # 过滤非国家列表
-    return filter
-
-def get_area_names():
-    #获得所有地区requests url最后一段
-    names = [a.split('/')[2] for a in get_urls() if '/' in a]
-    return names
-
-#print(get_area_names())
-
+    dic = {}
+    for area_name in get_area_url():# 过滤非国家列表,并截取最后的字段存入字典
+        if 'index_' in str(area_name):
+            dic[area_name.text] = area_name.get('href').split('/')[2].split('.')[0]
+    return dic
+#print(get_urls())
+#get_urls()
 
 area_urls='''
 /Country/index_CN.html
