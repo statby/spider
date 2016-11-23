@@ -77,7 +77,7 @@ def lianjia_perpage_info(page):
             houseIcon = perhouse.find(attrs={"class":"houseInfo"}).text
             district = houseIcon.split('|')[0].strip(" ")
             types= houseIcon.split('|')[1].strip(" ")
-            size = houseIcon.split('|')[2].strip(" ") 
+            size = re.findall('\d+\.?\d+?',houseIcon.split('|')[2].strip(" "))[0]
             face = houseIcon.split('|')[3].strip(" ") 
             decoration = houseIcon.split('|')[4].strip(" ") 
 
@@ -85,9 +85,9 @@ def lianjia_perpage_info(page):
             floor = positionInfo[0].split('(')[0]
             totalfloor = re.findall('\d+',positionInfo[0])[0]
             try:
-                position = positionInfo[3]
+                area = positionInfo[3]
             except:
-                position = None
+                area = None
             try:
                 buildtime = re.findall('\d+',positionInfo[1])[0]
             except:
@@ -113,7 +113,7 @@ def lianjia_perpage_info(page):
             perhouseinfo['decoration'] = decoration
             perhouseinfo['floor'] = floor
             perhouseinfo['totalfloor'] = totalfloor
-            perhouseinfo['position'] = position
+            perhouseinfo['area'] = area
             perhouseinfo['buildtime'] = buildtime
             perhouseinfo['attention'] = attention
             perhouseinfo['show'] = show
@@ -136,13 +136,13 @@ def lianjia_perpage_info(page):
 #            conn.execute(insertsql)
 #        conn.commit()
 
-            insertsql = 'INSERT INTO {tablename} (url,title,district,types,size,face,decoration,floor,totalfloor,position,buildtime,attention,show,publishtime,tag,totalprice,unitprice) \
+            insertsql = 'INSERT INTO {tablename} (url,title,district,types,size,face,decoration,floor,totalfloor,area,buildtime,attention,show,publishtime,tag,totalprice,unitprice) \
                         VALUES ("{url}","{title}","{district}","{types}","{size}","{face}","{decoration}", \
-                        "{floor}","{totalfloor}","{position}","{buildtime}","{attention}","{show}","{publishtime}", \
+                        "{floor}","{totalfloor}","{area}","{buildtime}","{attention}","{show}","{publishtime}", \
                         "{tag}","{totalprice}","{unitprice}") ' \
                         .format(tablename=tablename,url=str(perhouseinfo["url"]),title=str(perhouseinfo["title"]),district=perhouseinfo['district'],\
                         types=perhouseinfo['types'],size=perhouseinfo['size'],face=perhouseinfo['face'],decoration=perhouseinfo['decoration'],\
-                        floor=perhouseinfo['floor'],totalfloor=perhouseinfo["totalfloor"],position=perhouseinfo['position'],\
+                        floor=perhouseinfo['floor'],totalfloor=perhouseinfo["totalfloor"],area=perhouseinfo['area'],\
                         buildtime=perhouseinfo['buildtime'],attention=perhouseinfo['attention'],show=perhouseinfo['show'],\
                         publishtime=perhouseinfo['publishtime'],tag=perhouseinfo['tag'],unitprice=perhouseinfo['unitprice'],\
                         totalprice=perhouseinfo['totalprice'])
@@ -165,16 +165,22 @@ def createtable(db,tablename):
     droptablesql = 'drop table  if exists {tablename}'.format(tablename=tablename)
 #    createsql = 'create table {tablename} (title char, url char,followinfo char,flood char,houseinfo char,addres char,unitprice int,totalprice int,district char,type char,size int,face char,decoration char,buildtime char);'.format(tablename=TABLENAME)
 
-    createsql = 'create table {tablename} (url char, title char,district char,\
+#    create_ershoulianjia_sql = 'create table {tablename} (url char, title char,district char,\
+#                types char,size int,face char,decoration char,floor int,\
+#                totalfloor int,position char,buildtime int,attention int,\
+#                show int,publishtime char,tag char, totalprice int,unitprice int);'\
+#                .format(tablename=tablename)
+
+
+    create_table_sql = 'create table {tablename} (url char, title char, district char, area char, road char, \
                 types char,size int,face char,decoration char,floor int,\
                 totalfloor int,position char,buildtime int,attention int,\
                 show int,publishtime char,tag char, totalprice int,unitprice int);'\
                 .format(tablename=tablename)
 
 
-
     conn.execute(droptablesql)
-    conn.execute(createsql)
+    conn.execute(create_table_sql)
 #    conn.execute(insertsql)
     conn.commit()
 
@@ -234,9 +240,7 @@ def fangdd_perpage_info(page):
             unitprice = re.findall('\d+',price_untreated[1])[0]
             totalprice = re.findall('\d+',price_untreated[0])[0]
         
-            
-
-
+            perhouseinfo['url'] = url
             perhouseinfo['district'] = district
             perhouseinfo['area'] = area
             perhouseinfo['road'] = road
@@ -257,27 +261,17 @@ def fangdd_perpage_info(page):
 
 
 #            print (json.dumps(perhouseinfo,indent=1,ensure_ascii=False))
-            '''
 #            格式化输出每个房源的所有信息
-    
 
-#            insertsql = 'INSERT INTO {tablename} (title,url,totalfloor,flood,houseinfo,addres,unitprice,totalprice,district,types,size,face,decoration,buildtime) \
-#                        VALUES ("{title}","{url}","{followinfo}","{flood}","{houseinfo}","{addres}","{unitprice}","{totalprice}","{district}","{types}","{size}","{face}","{decoration}","{buildtime}")'\
-#                        .format(tablename=TABLENAME,title=str(perhouseinfo["title"]),url=str(perhouseinfo["url"]),totalfloor=perhouseinfo["fotalfloor"],\
-#                        flood=perhouseinfo['flood'],houseinfo=perhouseinfo['houseinfo'],addres=perhouseinfo['addres'],unitprice=perhouseinfo['unitprice'],\
-#                        totalprice=perhouseinfo['totalprice'],district=perhouseinfo['district'],types=perhouseinfo['types'],size=perhouseinfo['size'],face=perhouseinfo['face'],decoration=perhouseinfo['decoration'],buildtime=perhouseinfo['buildtime'])
-#            conn.execute(insertsql)
-#        conn.commit()
-
-            insertsql = 'INSERT INTO {tablename} (url,title,district,types,size,face,decoration,floor,totalfloor,position,buildtime,attention,show,publishtime,tag,totalprice,unitprice) \
-                        VALUES ("{url}","{title}","{district}","{types}","{size}","{face}","{decoration}", \
-                        "{floor}","{totalfloor}","{position}","{buildtime}","{attention}","{show}","{publishtime}", \
+            insertsql = 'INSERT INTO {tablename} (url,district,area,road,types,size,floor,totalfloor,show,tag,totalprice,unitprice) \
+                        VALUES ("{url}","{district}","{area}","{road}","{types}","{size}", \
+                        "{floor}","{totalfloor}","{show}", \
                         "{tag}","{totalprice}","{unitprice}") ' \
-                        .format(tablename=tablename,url=str(perhouseinfo["url"]),title=str(perhouseinfo["title"]),district=perhouseinfo['district'],\
-                        types=perhouseinfo['types'],size=perhouseinfo['size'],face=perhouseinfo['face'],decoration=perhouseinfo['decoration'],\
-                        floor=perhouseinfo['floor'],totalfloor=perhouseinfo["totalfloor"],position=perhouseinfo['position'],\
-                        buildtime=perhouseinfo['buildtime'],attention=perhouseinfo['attention'],show=perhouseinfo['show'],\
-                        publishtime=perhouseinfo['publishtime'],tag=perhouseinfo['tag'],unitprice=perhouseinfo['unitprice'],\
+                        .format(tablename=tablename,url=str(perhouseinfo["url"]),district=perhouseinfo['district'],area=perhouseinfo['area'],\
+                        road=perhouseinfo['road'],types=perhouseinfo['types'],size=perhouseinfo['size'],\
+                        floor=perhouseinfo['floor'],totalfloor=perhouseinfo["totalfloor"],\
+                        show=perhouseinfo['show'],\
+                        tag=perhouseinfo['tag'],unitprice=perhouseinfo['unitprice'],\
                         totalprice=perhouseinfo['totalprice'])
 #            print(insertsql)
             conn.execute(insertsql)
@@ -287,7 +281,6 @@ def fangdd_perpage_info(page):
 #            print(e)
 #            pass
 
-'''
 
 if __name__ == '__main__':
 #    print(lianjia_totalpage(contents('http://gz.lianjia.com/ershoufang/')))
@@ -295,16 +288,19 @@ if __name__ == '__main__':
 #     print( [i for i in list(lianjia_perpage_info(3).keys())])
 #     print('insertsql = INTO {tablename} (i for i in list(lianjia_perpage_info(3).keys()))')
 
-#    db = 'guangzhou.db'
-#    tablename = 'lianjiaershou'
-#    createtable(db,tablename)
-#    
-#    for page in range(101):
-#        lianjia_perpage_info(page)
-#        print("spider {} page".format(page))
+    db = 'guangzhou.db'
+    tablename = 'lianjiaershou'
+    createtable(db,tablename)
+    
+    for page in range(101):
+        lianjia_perpage_info(page)
+        print("spider {} page".format(page))
         
     db = 'guangzhou.db'
     tablename = 'fangddershou'
     createtable(db,tablename)
-    fangdd_perpage_info(3)
+#    fangdd_perpage_info(3)
+    for page in range(21):
+        fangdd_perpage_info(page)
+        print("spider {} page".format(page))
     
