@@ -180,18 +180,131 @@ def createtable(db,tablename):
 
 
 
+def fangdd_perpage_info(page):
+
+    conn = sqlite3.connect(db)
+
+#    url = 'http://gz.lianjia.com/ershoufang/pg{page}'.format(page=page)
+    url = 'http://esf.fangdd.com/guangzhou/list/pa{page}'.format(page=page)
+    content = contents(url)
+    soup = BeautifulSoup(content,'lxml')
+    allhouse = soup.find_all(attrs={"class":"list-item clearfix"})
+#    print(allhouse)
+
+    for perhouse in allhouse:
+            perhouseinfo = {}
+#        try:
+            try:
+                left__tag = perhouse.find(attrs={"class":"orange left__top"}).text
+            except:
+                left__tag = None
+
+            url = perhouse.find("a",attrs={"target":"_blank"}).get('href')
+            name_title  = perhouse.find(attrs={"class":"name-title clearfix"}).text.strip(" ").strip('\n').split('\n')
+            district = name_title[0]
+            types = name_title[1]
+            size = re.findall('\d+\.?\d+?',name_title[2])[0]
+
+            detail_untreated = perhouse.find(attrs={"class":"detail"}).text.replace("\n",'').replace(" ",'').replace("\xa0",'|').split('|')
+#            detail = detail_untreated.replace("\n",'').replace(" ",'')
+            district = detail_untreated[0]
+            area = detail_untreated[1]
+            road = detail_untreated[3]
+            floor = detail_untreated[5].split('/')[0]
+            totalfloor = detail_untreated[5].split('/')[1]
+            if re.findall('人预约看房',detail_untreated[-1]):
+                show = re.findall('\d+',detail_untreated[-1])[0]
+            else:
+                show = None
+
+            tag_untreated = perhouse.find(attrs={"class":"tag-group"}).text.strip().split('\n')
+            tag = ','.join(tag_untreated)
+
+            try:
+                station = perhouse.find(attrs={"class":"stationNo"}).text.strip()
+            except:
+                station = None
+            try:
+                station_distance_untreated = perhouse.find("p",attrs={"class":"info-content pull-left"}).text.replace(" ",'').split('\n')
+                station_distance = station_distance_untreated[7] + station_distance_untreated[9]
+            except:
+                station_distance = None
+            
+            price_untreated = perhouse.find(attrs={"class":"price-panel pull-right"}).text.replace("\n",'').replace("\ue68e\ue68f","").split(' ')
+            unitprice = re.findall('\d+',price_untreated[1])[0]
+            totalprice = re.findall('\d+',price_untreated[0])[0]
+        
+            
+
+
+            perhouseinfo['district'] = district
+            perhouseinfo['area'] = area
+            perhouseinfo['road'] = road
+            perhouseinfo['types'] = types
+            perhouseinfo['size'] = size
+#            perhouseinfo['face'] = face
+#            perhouseinfo['decoration'] = decoration
+            perhouseinfo['floor'] = floor
+            perhouseinfo['totalfloor'] = totalfloor
+#            perhouseinfo['position'] = position
+#             perhouseinfo['buildtime'] = buildtime
+#             perhouseinfo['attention'] = attention
+            perhouseinfo['show'] = show
+#             perhouseinfo['publishtime'] = publishtime
+            perhouseinfo['tag'] = tag
+            perhouseinfo['totalprice'] = totalprice
+            perhouseinfo['unitprice'] = unitprice
+
+
+#            print (json.dumps(perhouseinfo,indent=1,ensure_ascii=False))
+            '''
+#            格式化输出每个房源的所有信息
+    
+
+#            insertsql = 'INSERT INTO {tablename} (title,url,totalfloor,flood,houseinfo,addres,unitprice,totalprice,district,types,size,face,decoration,buildtime) \
+#                        VALUES ("{title}","{url}","{followinfo}","{flood}","{houseinfo}","{addres}","{unitprice}","{totalprice}","{district}","{types}","{size}","{face}","{decoration}","{buildtime}")'\
+#                        .format(tablename=TABLENAME,title=str(perhouseinfo["title"]),url=str(perhouseinfo["url"]),totalfloor=perhouseinfo["fotalfloor"],\
+#                        flood=perhouseinfo['flood'],houseinfo=perhouseinfo['houseinfo'],addres=perhouseinfo['addres'],unitprice=perhouseinfo['unitprice'],\
+#                        totalprice=perhouseinfo['totalprice'],district=perhouseinfo['district'],types=perhouseinfo['types'],size=perhouseinfo['size'],face=perhouseinfo['face'],decoration=perhouseinfo['decoration'],buildtime=perhouseinfo['buildtime'])
+#            conn.execute(insertsql)
+#        conn.commit()
+
+            insertsql = 'INSERT INTO {tablename} (url,title,district,types,size,face,decoration,floor,totalfloor,position,buildtime,attention,show,publishtime,tag,totalprice,unitprice) \
+                        VALUES ("{url}","{title}","{district}","{types}","{size}","{face}","{decoration}", \
+                        "{floor}","{totalfloor}","{position}","{buildtime}","{attention}","{show}","{publishtime}", \
+                        "{tag}","{totalprice}","{unitprice}") ' \
+                        .format(tablename=tablename,url=str(perhouseinfo["url"]),title=str(perhouseinfo["title"]),district=perhouseinfo['district'],\
+                        types=perhouseinfo['types'],size=perhouseinfo['size'],face=perhouseinfo['face'],decoration=perhouseinfo['decoration'],\
+                        floor=perhouseinfo['floor'],totalfloor=perhouseinfo["totalfloor"],position=perhouseinfo['position'],\
+                        buildtime=perhouseinfo['buildtime'],attention=perhouseinfo['attention'],show=perhouseinfo['show'],\
+                        publishtime=perhouseinfo['publishtime'],tag=perhouseinfo['tag'],unitprice=perhouseinfo['unitprice'],\
+                        totalprice=perhouseinfo['totalprice'])
+#            print(insertsql)
+            conn.execute(insertsql)
+            conn.commit()
+            
+#        except Exception as e:
+#            print(e)
+#            pass
+
+'''
+
 if __name__ == '__main__':
 #    print(lianjia_totalpage(contents('http://gz.lianjia.com/ershoufang/')))
 #    for i in list(lianjia_perpage_info(3).keys()):
 #     print( [i for i in list(lianjia_perpage_info(3).keys())])
 #     print('insertsql = INTO {tablename} (i for i in list(lianjia_perpage_info(3).keys()))')
 
-    db = 'lianjia.db'
-    tablename = 'ershougz'
-    createtable(db,tablename)
-    
-    for page in range(101):
-        lianjia_perpage_info(page)
-        print("spider {} page".format(page))
+#    db = 'guangzhou.db'
+#    tablename = 'lianjiaershou'
+#    createtable(db,tablename)
+#    
+#    for page in range(101):
+#        lianjia_perpage_info(page)
+#        print("spider {} page".format(page))
         
+    db = 'guangzhou.db'
+    tablename = 'fangddershou'
+    createtable(db,tablename)
+    fangdd_perpage_info(3)
     
