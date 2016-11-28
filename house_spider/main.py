@@ -11,6 +11,7 @@ import json
 import sqlite3
 import sys
 import re
+import time
 
         
 #!/bin/env python3
@@ -282,25 +283,28 @@ def fangdd_perpage_info(page):
 #            pass
 
 
+def get_data():
+    return time.strftime("%y%m%d_%H%M")
+
 if __name__ == '__main__':
 #    print(lianjia_totalpage(contents('http://gz.lianjia.com/ershoufang/')))
 #    for i in list(lianjia_perpage_info(3).keys()):
 #     print( [i for i in list(lianjia_perpage_info(3).keys())])
 #     print('insertsql = INTO {tablename} (i for i in list(lianjia_perpage_info(3).keys()))')
 
-    db = 'guangzhou.db'
+#    db = 'guangzhou.db'
+    db = 'guangzhou.db' + '.' + str(get_data())
     tablename = 'lianjiaershou'
     createtable(db,tablename)
     
-    for page in range(101):
+    for page in range(1,101):
         lianjia_perpage_info(page)
         print("spider {} page".format(page))
         
-    db = 'guangzhou.db'
     tablename = 'fangddershou'
     createtable(db,tablename)
 #    fangdd_perpage_info(3)
-    for page in range(21):
+    for page in range(1,21):
         fangdd_perpage_info(page)
         print("spider {} page".format(page))
     
